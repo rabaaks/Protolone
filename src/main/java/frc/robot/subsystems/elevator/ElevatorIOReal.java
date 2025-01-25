@@ -14,14 +14,9 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ElevatorFeedforward;
 
-public class ElevatorIOReal implements ElevatorIO {
-    private SparkMax leftMotor = new SparkMax(leftMotorId, MotorType.kBrushless);
-    private SparkMax rightMotor = new SparkMax(rightMotorId, MotorType.kBrushless);
-
-    private RelativeEncoder encoder = leftMotor.getEncoder();
-    private SparkClosedLoopController feedback = leftMotor.getClosedLoopController();
-    private double feedforward = 0.0;
+public class ElevatorIOReal {
 
     public ElevatorIOReal() {
         SparkMaxConfig config = new SparkMaxConfig();
@@ -35,22 +30,11 @@ public class ElevatorIOReal implements ElevatorIO {
             .p(p)
             .i(i)
             .d(d);
-        leftMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        config
-            .follow(leftMotor, true);
-        rightMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
-    @Override
-    public void updateInputs(ElevatorIOInputs inputs) {
-        inputs.position = encoder.getPosition();
-        inputs.velocity = encoder.getVelocity();
-        inputs.voltages = new double[] {leftMotor.getAppliedOutput() * leftMotor.getBusVoltage() , rightMotor.getAppliedOutput() * rightMotor.getBusVoltage()};
-        inputs.currents = new double[] {leftMotor.getOutputCurrent(), rightMotor.getOutputCurrent()};
+    public void setposition(){
+
     }
 
-    @Override
-    public void setPosition(double position, double ffVoltage) {
-        feedback.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, ffVoltage);
-    }
+
 }

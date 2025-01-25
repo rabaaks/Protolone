@@ -19,43 +19,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 public class Elevator extends SubsystemBase {
-    private final ElevatorIO io;
-    private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
-
-    private final TrapezoidProfile profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(maxProfileVelocity, maxProfileAcceleration));
-    private TrapezoidProfile.State profileState = new TrapezoidProfile.State(0, 0);
-    private TrapezoidProfile.State futureProfileState = new TrapezoidProfile.State(0, 0);
-
-    private final ElevatorFeedforward feedforward = new ElevatorFeedforward(s, g, v, a);
-
-    private final SysIdRoutine routine;
 
     public Elevator(ElevatorIO io) {
-        this.io = io;
-
-        routine = new SysIdRoutine(
-        new SysIdRoutine.Config(
-            Velocity.ofRelativeUnits(0.5, Units.Volts.per(Units.Seconds)), 
-            Voltage.ofRelativeUnits(7.0, Units.Volts), 
-            Time.ofRelativeUnits(10.0, Units.Seconds)
-        ), 
-        new SysIdRoutine.Mechanism(
-            voltage -> io.setPosition(0, voltage.magnitude()),
-            log -> {
-                log.motor("elevator")
-                    .voltage(Voltage.ofRelativeUnits(inputs.voltages[0], Units.Volts))
-                    .linearPosition(Distance.ofRelativeUnits(inputs.position, Units.Meters))
-                    .linearVelocity(LinearVelocity.ofRelativeUnits(inputs.velocity, Units.MetersPerSecond));
-            },
-            this
-        )
-    );
     }
 
     @Override
     public void periodic() {
-        io.updateInputs(inputs);
-        Logger.processInputs("Elevator", inputs);
     }
 
     public void setPosition(double position) {

@@ -16,16 +16,11 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIOReal;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 
 public class RobotContainer {
-    private final Drive drive;
     private final Elevator elevator;
 
     private final CommandXboxController controller = new CommandXboxController(driverControllerPort);
@@ -33,54 +28,25 @@ public class RobotContainer {
     public RobotContainer() {
         switch (currentMode) {
             case REAL:
-                drive = new Drive(
-                    new GyroIO() {},
-                    new ModuleIO() {},
-                    new ModuleIO() {},
-                    new ModuleIO() {},
-                    new ModuleIO() {}
-                );
                 elevator = new Elevator(new ElevatorIOReal());
                 break;
             default:
             case SIM:
             case REPLAY:
-                drive = new Drive(
-                    new GyroIO() {},
-                    new ModuleIOSim(),
-                    new ModuleIOSim(),
-                    new ModuleIOSim(),
-                    new ModuleIOSim()
-                );
-                elevator = new Elevator(new ElevatorIOSim());
-                break;
         }
 
         configureBindings();
     }
 
     private void configureBindings() {
-        drive.setDefaultCommand(
-            new RunCommand(
-                () -> drive.setSpeeds(
-                    new ChassisSpeeds(
-                        MathUtil.applyDeadband(-controller.getLeftY(), 0.1) * speed, 
-                        MathUtil.applyDeadband(-controller.getLeftX(), 0.1) * speed, 
-                        MathUtil.applyDeadband(-controller.getRightX(), 0.1) * speed
-                    )
-                ),
-                drive
-            )
-        );
 
-        // elevator.setDefaultCommand(
-        //     new RunCommand(
-        //         () -> elevator.setPosition(controller.povDown().getAsBoolean() ? 1.2 : (controller.povLeft().getAsBoolean() ? 0.9 : (controller.povUp().getAsBoolean() ? 0.6 : (controller.povLeft().getAsBoolean() ? 0.3 : 0.0)))),
-        //         elevator
-        //     )
-        // );
 
-        controller.a().whileTrue(elevator.sysIdRoutine());
+        elevator.setDefaultCommand(
+             new RunCommand(
+                 () -> elevator.setPosition(controller.povUp().getAsBoolean() ? 0.3 : 0.0),
+                 elevator
+             )
+         );
     }
 
     public Command getAutonomousCommand() {
