@@ -29,6 +29,8 @@ public class Elevator extends SubsystemBase {
 
     private final SysIdRoutine routine;
 
+    private static Elevator instance;
+
     public Elevator(ElevatorIO io) {
         this.io = io;
 
@@ -49,6 +51,13 @@ public class Elevator extends SubsystemBase {
             this
         )
     );
+    }
+
+    public static Elevator getInstance() {
+        if (instance == null) {
+            instance = new Elevator(new ElevatorIOSim());
+        }
+        return instance;
     }
 
     @Override
