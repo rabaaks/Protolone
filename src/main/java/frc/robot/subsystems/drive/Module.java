@@ -8,13 +8,15 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import frc.robot.subsystems.drive.EncoderIO.EncoderIOInputs;
+import frc.robot.subsystems.drive.ModuleIO.ModuleIOInputs;
 
 public class Module {
     private final ModuleIO io;
-    private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
+    private final ModuleIOInputs inputs = new ModuleIOInputs();
 
     private final EncoderIO encoderIO;
-    private final EncoderIOInputsAutoLogged encoderInputs = new EncoderIOInputsAutoLogged();
+    private final EncoderIOInputs encoderInputs = new EncoderIOInputs();
 
     private final int index;
 
@@ -41,10 +43,10 @@ public class Module {
 
     public void updateInputs() {
         io.updateInputs(inputs);
-        Logger.processInputs("Drive/Modules/" + index, inputs);
+        // Logger.processInputs("Drive/Modules/" + index, inputs);
 
         encoderIO.updateInputs(encoderInputs);
-        Logger.processInputs("Drive/Encoders/" + index, encoderInputs);
+        // Logger.processInputs("Drive/Encoders/" + index, encoderInputs);
     }
 
     public SwerveModuleState getState() {

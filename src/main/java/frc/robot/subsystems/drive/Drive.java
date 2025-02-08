@@ -15,12 +15,13 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.drive.GyroIO.GyroIOInputs;
 
 public class Drive extends SubsystemBase {
     private final Module[] modules;
 
     private final GyroIO gyroIO;
-    private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+    private final GyroIOInputs gyroInputs = new GyroIOInputs();
 
     private Rotation2d rawGyroRotation = new Rotation2d();
     
@@ -53,7 +54,7 @@ public class Drive extends SubsystemBase {
         }
 
         gyroIO.updateInputs(gyroInputs);
-        Logger.processInputs("Drive/Gyro", gyroInputs);
+        // Logger.processInputs("Drive/Gyro", gyroInputs);
 
         SwerveModulePosition[] positions = getPositions();
         if (gyroInputs.connected) {

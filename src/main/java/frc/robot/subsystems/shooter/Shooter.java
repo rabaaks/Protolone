@@ -6,10 +6,11 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.shooter.ShooterIO.ShooterIOInputs;
 
 public class Shooter extends SubsystemBase {
     private final ShooterIO io;
-    private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
+    private final ShooterIOInputs inputs = new ShooterIOInputs();
 
     private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(s, v, a);
 
@@ -20,7 +21,7 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic() {
         io.updateInputs(inputs);
-        Logger.processInputs("Shooter", inputs);
+        // Logger.processInputs("Shooter", inputs);
     }
 
     public void setVelocity(double velocity) {
