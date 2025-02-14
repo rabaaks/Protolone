@@ -20,6 +20,7 @@ import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIOReal;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
+import frc.robot.subsystems.elevator.Commands.UpdateLevel;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOReal;
@@ -34,8 +35,14 @@ public class RobotContainer {
     private final Drive drive;
     private final Elevator elevator;
     private final Shooter shooter;
+    private static int level = 0;
 
     private final CommandXboxController controller = new CommandXboxController(driverControllerPort);
+
+    public static void setLevel(int level) {
+        RobotContainer.level = level;
+    }
+
 
     public RobotContainer() {
         switch (currentMode) {
@@ -93,16 +100,20 @@ public class RobotContainer {
 
         // controller.a().whileTrue(new RunCommand(() -> shooter.setVelocity(1000)));
 
-        elevator.setDefaultCommand(
-            new RunCommand(
-                () -> {
-                    elevator.setPosition(
-                        controller.povUp().getAsBoolean() ? 1.0 : (controller.povLeft().getAsBoolean() ? 0.6 : (controller.povRight().getAsBoolean() ? 0.4 : 0))
-                    );
-                },
-                elevator
-            )
-        );
+        // elevator.setDefaultCommand(
+        //     new RunCommand(
+        //         () -> {
+        //             elevator.setPosition(
+        //                 controller.povUp().getAsBoolean() ? 1.0 : (controller.povLeft().getAsBoolean() ? 0.6 : (controller.povRight().getAsBoolean() ? 0.4 : 0))
+        //             );
+        //         },
+        //         elevator
+        //     )
+        // );
+
+        controller.povUp().onTrue(new UpdateLevel(level, true));
+        controller.povDown().onTrue(new UpdateLevel(level, false));
+
 
         shooter.setDefaultCommand(
             new RunCommand(
