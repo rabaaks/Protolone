@@ -17,10 +17,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.subsystems.elevator.ElevatorIO.ElevatorIOInputs;
 
 public class Elevator extends SubsystemBase {
     private final ElevatorIO io;
-    private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
+    private final ElevatorIOInputs inputs = new ElevatorIOInputs();
 
     private final ExponentialProfile profile = new ExponentialProfile(ExponentialProfile.Constraints.fromCharacteristics(12.0 - s - g, v, a));
     private ExponentialProfile.State profileState = new ExponentialProfile.State(0.0, 0.0);
@@ -55,7 +56,7 @@ public class Elevator extends SubsystemBase {
     @Override
     public void periodic() {
         io.updateInputs(inputs);
-        Logger.processInputs("Elevator", inputs);
+        // Logger.processInputs("Elevator", inputs);
     }
 
     @AutoLogOutput(key="Elevator/Position/Measured")
