@@ -30,7 +30,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
-import frc.robot.subsystems.shooter.Shooter;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -50,12 +49,14 @@ public class DriveCommands {
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 
-  private static final double DRIVE_KP = 5.0;
-  private static final double DRIVE_KD = 0.4;
-  private static final double DRIVE_MAX_VELOCITY = 1.5;
-  private static final double DRIVE_MAX_ACCELERATION = 8.0;
+  private static final double DRIVE_KP = 1.5;
+  private static final double DRIVE_KD = 0.15;
+  private static final double DRIVE_MAX_VELOCITY = 2.5;
+  private static final double DRIVE_MAX_ACCELERATION = 6.5;
 
-  private static final Translation2d TARGET_POSITION = new Translation2d(4, 4.5);
+  private static final double POSITION_TOLERANCE = 0.1;
+
+  private static final Translation2d TARGET_POSITION = new Translation2d(4.5, 4);
 
   private static final double TARGET_DISTANCE = Units.inchesToMeters(58);
 
@@ -170,7 +171,6 @@ public class DriveCommands {
 
   public static Command alignToShoot(
       Drive drive,
-      Shooter shooter,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier rotationSupplier) {
@@ -200,48 +200,65 @@ public class DriveCommands {
 
     // Construct command
     return Commands.startRun(
-        () -> {
-          xController.reset(drive.getPose().getX());
-          yController.reset(drive.getPose().getY());
-          angleController.reset(drive.getPose().getRotation().getRadians());
-        },
-        () -> {
-          Pose2d relativePose =
-              drive.getPose().relativeTo(new Pose2d(TARGET_POSITION, new Rotation2d()));
-          double angle = Math.atan2(relativePose.getY(), relativePose.getX());
-          Pose2d target =
-              new Pose2d(
-                  Math.cos(angle) * TARGET_DISTANCE + TARGET_POSITION.getX(),
-                  Math.sin(angle) * TARGET_DISTANCE + TARGET_POSITION.getY(),
-                  Rotation2d.kPi.plus(new Rotation2d(angle)));
-          Logger.recordOutput("ShootTarget", target);
-          Logger.recordOutput("ShootAngle", angle);
-          Logger.recordOutput(
-              "ProfileTarget",
-              new Pose2d(
-                  xController.getSetpoint().position,
-                  yController.getSetpoint().position,
-                  new Rotation2d(angleController.getSetpoint().position)));
-          // Get linear velocity
-          Translation2d linearVelocity =
-              new Translation2d(
-                  xController.calculate(drive.getPose().getX(), target.getX()),
-                  yController.calculate(drive.getPose().getY(), target.getY()));
+            () -> {
+              xController.reset(
+                  new TrapezoidProfile.State(
+                      drive.getPose().getX(), drive.getChassisSpeeds().vxMetersPerSecond));
+              yController.reset(
+                  new TrapezoidProfile.State(
+                      drive.getPose().getY(), drive.getChassisSpeeds().vyMetersPerSecond));
+            },
+            () -> {
+              Pose2d relativePose =
+                  drive.getPose().relativeTo(new Pose2d(TARGET_POSITION, new Rotation2d()));
+              double angle = Math.atan2(relativePose.getY(), relativePose.getX());
+              Pose2d target =
+                  new Pose2d(
+                      Math.cos(angle) * TARGET_DISTANCE + TARGET_POSITION.getX(),
+                      Math.sin(angle) * TARGET_DISTANCE + TARGET_POSITION.getY(),
+                      Rotation2d.kPi.plus(new Rotation2d(angle)));
+              Logger.recordOutput("ShootTarget", target);
+              Logger.recordOutput("ShootAngle", angle);
+              Logger.recordOutput(
+                  "ProfileTarget",
+                  new Pose2d(
+                      xController.getSetpoint().position,
+                      yController.getSetpoint().position,
+                      new Rotation2d(angleController.getSetpoint().position)));
+              // Get linear velocity
+              Translation2d linearVelocity =
+                  new Translation2d(
+                      xController.calculate(
+                          drive.getPose().getX(),
+                          new TrapezoidProfile.State(
+                              target.getX(), xSupplier.getAsDouble() * DRIVE_MAX_VELOCITY)),
+                      yController.calculate(
+                          drive.getPose().getY(),
+                          new TrapezoidProfile.State(
+                              target.getY(), ySupplier.getAsDouble() * DRIVE_MAX_VELOCITY)));
 
-          // Calculate angular speed
-          double omega =
-              angleController.calculate(
-                  drive.getRotation().getRadians(), target.getRotation().getRadians());
+              // Calculate angular speed
+              double omega =
+                  angleController.calculate(
+                      drive.getRotation().getRadians(), target.getRotation().getRadians());
 
-          // Convert to field relative speeds & send command
-          ChassisSpeeds speeds =
-              new ChassisSpeeds(
-                  linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                  linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                  omega);
-          drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
-        },
-        drive);
+              // Convert to field relative speeds & send command
+              ChassisSpeeds speeds =
+                  new ChassisSpeeds(
+                      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                      omega);
+              drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
+            },
+            drive)
+        .until(
+            () -> {
+              Pose2d pose = drive.getPose();
+              return (Math.abs(pose.getX() - xController.getGoal().position) < POSITION_TOLERANCE
+                  && Math.abs(pose.getY() - yController.getGoal().position) < POSITION_TOLERANCE
+                  && Math.abs(pose.getRotation().getRadians() - angleController.getGoal().position)
+                      < POSITION_TOLERANCE);
+            });
   }
 
   /**

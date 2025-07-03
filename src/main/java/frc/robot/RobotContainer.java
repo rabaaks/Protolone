@@ -21,6 +21,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -147,15 +148,46 @@ public class RobotContainer {
             () -> controller.getLeftX(),
             () -> -controller.getRightX()));
 
+    // controller
+    //     .rightTrigger()
+    //     .onTrue(
+    //         Commands.sequence(
+    //             Commands.parallel(
+    //                 DriveCommands.alignToShoot(
+    //                     drive,
+    //                     () -> controller.getLeftY(),
+    //                     () -> controller.getLeftX(),
+    //                     () -> -controller.getRightX()),
+    //                 Commands.runOnce(() -> shooter.shoot(), shooter),
+    //                 Commands.waitSeconds(0.5)),
+    //             Commands.runOnce(() -> shooter.feed(), shooter),
+    //             Commands.waitSeconds(2),
+    //             Commands.runOnce(() -> shooter.stop(), shooter)));
+
+    // Define the shooter follow-up command sequence somewhere
+    Command shootFeedSequence =
+        Commands.sequence(
+            Commands.runOnce(() -> shooter.feed(), shooter),
+            Commands.waitSeconds(2),
+            Commands.runOnce(() -> shooter.stop(), shooter));
+
     controller
         .rightTrigger()
-        .whileTrue(
-            DriveCommands.alignToShoot(
-                drive,
-                shooter,
-                () -> controller.getLeftY(),
-                () -> controller.getLeftX(),
-                () -> -controller.getRightX()));
+        .onTrue(
+            Commands.sequence(
+                Commands.parallel(
+                    DriveCommands.alignToShoot(
+                        drive,
+                        () -> controller.getLeftY(),
+                        () -> controller.getLeftX(),
+                        () -> -controller.getRightX()),
+                    Commands.sequence(
+                        Commands.runOnce(() -> shooter.shoot(), shooter),
+                        Commands.waitSeconds(0.5))),
+                // After the above finishes, schedule the follow-up shooting commands separately,
+                // so this sequence ends and drive subsystem is free.
+                Commands.runOnce(
+                    () -> CommandScheduler.getInstance().schedule(shootFeedSequence))));
 
     // Lock to 0° when A button is held
     controller

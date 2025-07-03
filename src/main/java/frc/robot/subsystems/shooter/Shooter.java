@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter;
 
+import static frc.robot.subsystems.shooter.ShooterConstants.maxVelocity;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Shooter extends SubsystemBase {
@@ -10,8 +12,17 @@ public class Shooter extends SubsystemBase {
     this.io = io;
   }
 
+  @Override
+  public void periodic() {
+    io.updateInputs(inputs);
+  }
+
   public void shoot(double velocityRadPerSec) {
     io.setShootVelocity(velocityRadPerSec);
+  }
+
+  public void shoot() {
+    shoot(maxVelocity);
   }
 
   public void feed() {

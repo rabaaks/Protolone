@@ -9,5 +9,6 @@ public class ShooterConstants {
   public static final double wheelEncoderPositionFactor = 2 * Math.PI;
   public static final double wheelEncoderVelocityFactor = 2 * Math.PI / 60;
 
-  public static final double shootKv = 1.0 / 5500;
+  public static final double maxVelocity = 5500 * 2 * Math.PI;
+  public static final double shootKv = 1.0 / maxVelocity;
 }
