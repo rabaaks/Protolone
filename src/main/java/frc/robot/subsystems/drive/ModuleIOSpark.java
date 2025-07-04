@@ -41,7 +41,7 @@ import java.util.function.DoubleSupplier;
  * and duty cycle absolute encoder.
  */
 public class ModuleIOSpark implements ModuleIO {
-  private final Rotation2d zeroRotation;
+  private final double zeroRotation;
 
   // Hardware objects
   private final SparkBase driveSpark;
@@ -71,7 +71,7 @@ public class ModuleIOSpark implements ModuleIO {
           case 1 -> frontRightZeroRotation;
           case 2 -> backLeftZeroRotation;
           case 3 -> backRightZeroRotation;
-          default -> new Rotation2d();
+          default -> 0.0;
         };
     driveSpark =
         new SparkMax(
@@ -112,7 +112,7 @@ public class ModuleIOSpark implements ModuleIO {
     var driveConfig = new SparkMaxConfig();
     driveConfig
         .inverted(driveInverted)
-        .idleMode(IdleMode.kBrake)
+        .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(driveMotorCurrentLimit)
         .voltageCompensation(12.0);
     driveConfig
@@ -179,9 +179,7 @@ public class ModuleIOSpark implements ModuleIO {
     tryUntilOk(
         turnSpark,
         5,
-        () ->
-            turnEncoder.setPosition(
-                Rotation2d.fromRadians(absoluteEncoder.get()).minus(zeroRotation).getRadians()));
+        () -> turnEncoder.setPosition((absoluteEncoder.get() - zeroRotation) * 2.0 * Math.PI));
 
     // Create odometry queues
     timestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
