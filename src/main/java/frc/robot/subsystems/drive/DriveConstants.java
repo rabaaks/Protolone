@@ -15,7 +15,6 @@ package frc.robot.subsystems.drive;
 
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
@@ -35,28 +34,28 @@ public class DriveConstants {
       };
 
   // Zeroed rotation values for each module, see setup instructions
-  public static final Rotation2d frontLeftZeroRotation = new Rotation2d(0.0);
-  public static final Rotation2d frontRightZeroRotation = new Rotation2d(0.0);
-  public static final Rotation2d backLeftZeroRotation = new Rotation2d(0.0);
-  public static final Rotation2d backRightZeroRotation = new Rotation2d(0.0);
+  public static final double frontLeftZeroRotation = 0.542;
+  public static final double frontRightZeroRotation = 0.130;
+  public static final double backLeftZeroRotation = 0.815;
+  public static final double backRightZeroRotation = 0.170;
 
   // Device CAN IDs
   public static final int pigeonCanId = 9;
 
-  public static final int frontLeftDriveCanId = 1;
-  public static final int backLeftDriveCanId = 3;
-  public static final int frontRightDriveCanId = 5;
-  public static final int backRightDriveCanId = 7;
+  public static final int frontLeftDriveCanId = 7;
+  public static final int backLeftDriveCanId = 5;
+  public static final int frontRightDriveCanId = 3;
+  public static final int backRightDriveCanId = 1;
 
-  public static final int frontLeftTurnCanId = 2;
-  public static final int backLeftTurnCanId = 4;
-  public static final int frontRightTurnCanId = 6;
-  public static final int backRightTurnCanId = 8;
+  public static final int frontLeftTurnCanId = 8;
+  public static final int backLeftTurnCanId = 6;
+  public static final int frontRightTurnCanId = 4;
+  public static final int backRightTurnCanId = 2;
 
-  public static final int frontLeftEncoderId = 0;
-  public static final int backLeftEncoderId = 0;
+  public static final int frontLeftEncoderId = 1;
+  public static final int backLeftEncoderId = 2;
   public static final int frontRightEncoderId = 0;
-  public static final int backRightEncoderId = 0;
+  public static final int backRightEncoderId = 3;
 
   // Drive motor configuration
   public static final boolean driveInverted = true;
@@ -95,7 +94,7 @@ public class DriveConstants {
       (2 * Math.PI) / 60.0 / turnMotorReduction; // RPM -> Rad/Sec
 
   // Turn PID configuration
-  public static final double turnKp = 2.0;
+  public static final double turnKp = 0.2;
   public static final double turnKd = 0.0;
   public static final double turnSimP = 8.0;
   public static final double turnSimD = 0.0;

@@ -1,8 +1,8 @@
 package frc.robot.subsystems.shooter;
 
 public class ShooterConstants {
-  public static final int feedId = 0;
-  public static final int shootId = 0;
+  public static final int feedId = 12;
+  public static final int shootId = 11;
 
   public static final boolean wheelInverted = false;
 
