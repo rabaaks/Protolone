@@ -34,22 +34,22 @@ public class DriveConstants {
       };
 
   // Zeroed rotation values for each module, see setup instructions
-  public static final double frontLeftZeroRotation = 0.542;
-  public static final double frontRightZeroRotation = 0.130;
-  public static final double backLeftZeroRotation = 0.815;
-  public static final double backRightZeroRotation = 0.170;
+  public static final double frontLeftZeroRotation = 0.533;
+  public static final double frontRightZeroRotation = 0.127;
+  public static final double backLeftZeroRotation = 0.805;
+  public static final double backRightZeroRotation = 0.172;
 
   // Device CAN IDs
   public static final int pigeonCanId = 9;
 
   public static final int frontLeftDriveCanId = 7;
-  public static final int backLeftDriveCanId = 5;
-  public static final int frontRightDriveCanId = 3;
+  public static final int backLeftDriveCanId = 3;
+  public static final int frontRightDriveCanId = 5;
   public static final int backRightDriveCanId = 1;
 
   public static final int frontLeftTurnCanId = 8;
-  public static final int backLeftTurnCanId = 6;
-  public static final int frontRightTurnCanId = 4;
+  public static final int backLeftTurnCanId = 4;
+  public static final int frontRightTurnCanId = 6;
   public static final int backRightTurnCanId = 2;
 
   public static final int frontLeftEncoderId = 1;
@@ -58,7 +58,7 @@ public class DriveConstants {
   public static final int backRightEncoderId = 3;
 
   // Drive motor configuration
-  public static final boolean driveInverted = true;
+  public static final boolean driveInverted = false;
   public static final int driveMotorCurrentLimit = 50;
   public static final double wheelRadiusMeters = Units.inchesToMeters(2);
   public static final double driveMotorReduction = 5.14;

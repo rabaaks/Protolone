@@ -22,7 +22,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public void shoot() {
-    shoot(maxVelocity);
+    shoot(maxVelocity / 5.0);
   }
 
   public void feed() {

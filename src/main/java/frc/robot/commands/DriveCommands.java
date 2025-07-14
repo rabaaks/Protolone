@@ -13,6 +13,8 @@
 
 package frc.robot.commands;
 
+import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -56,7 +58,10 @@ public class DriveCommands {
 
   private static final double POSITION_TOLERANCE = 0.1;
 
-  private static final Translation2d TARGET_POSITION = new Translation2d(4.5, 4);
+  //   private static final Translation2d TARGET_POSITION = new Translation2d(4.5, 4);
+  private static final Translation2d TARGET_POSITION =
+      new Translation2d(
+          aprilTagLayout.getTagPose(2).get().getX(), aprilTagLayout.getTagPose(2).get().getY());
 
   private static final double TARGET_DISTANCE = Units.inchesToMeters(58);
 

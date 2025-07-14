@@ -148,23 +148,8 @@ public class RobotContainer {
             () -> controller.getLeftX(),
             () -> -controller.getRightX()));
 
-    shooter.setDefaultCommand(Commands.runOnce(() -> shooter.stop()).andThen(Commands.none()));
-
-    // controller
-    //     .rightTrigger()
-    //     .onTrue(
-    //         Commands.sequence(
-    //             Commands.parallel(
-    //                 DriveCommands.alignToShoot(
-    //                     drive,
-    //                     () -> controller.getLeftY(),
-    //                     () -> controller.getLeftX(),
-    //                     () -> -controller.getRightX()),
-    //                 Commands.runOnce(() -> shooter.shoot(), shooter),
-    //                 Commands.waitSeconds(0.5)),
-    //             Commands.runOnce(() -> shooter.feed(), shooter),
-    //             Commands.waitSeconds(2),
-    //             Commands.runOnce(() -> shooter.stop(), shooter)));
+    shooter.setDefaultCommand(
+        Commands.runOnce(() -> shooter.stop(), shooter).andThen(Commands.none()));
 
     // Define the shooter follow-up command sequence somewhere
     Command shootFeedSequence =
