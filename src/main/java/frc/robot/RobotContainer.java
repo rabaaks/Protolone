@@ -39,6 +39,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import java.util.Set;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -52,6 +53,8 @@ public class RobotContainer {
   private final Drive drive;
   private final Vision vision;
   private final Shooter shooter;
+
+  private Command alignCommand;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -144,32 +147,53 @@ public class RobotContainer {
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
-            () -> controller.getLeftY(),
-            () -> controller.getLeftX(),
+            () -> -controller.getLeftY(),
+            () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
     shooter.setDefaultCommand(
         Commands.runOnce(() -> shooter.stop(), shooter).andThen(Commands.none()));
 
-    // Define the shooter follow-up command sequence somewhere
     Command shootFeedSequence =
         Commands.sequence(Commands.runOnce(() -> shooter.feed(), shooter), Commands.waitSeconds(2));
+
+    Command translationAlign =
+        DriveCommands.alignToShoot(
+            drive,
+            () -> -controller.getLeftY(),
+            () -> -controller.getLeftX(),
+            () -> -controller.getRightX(),
+            true);
+
+    Command noTranslationAlign =
+        DriveCommands.alignToShoot(
+            drive,
+            () -> -controller.getLeftY(),
+            () -> -controller.getLeftX(),
+            () -> -controller.getRightX(),
+            false);
+
+    alignCommand = translationAlign;
+
+    controller
+        .y()
+        .onTrue(
+            Commands.runOnce(
+                () ->
+                    alignCommand =
+                        (alignCommand == translationAlign
+                            ? noTranslationAlign
+                            : translationAlign)));
 
     controller
         .rightTrigger()
         .onTrue(
             Commands.sequence(
                 Commands.parallel(
-                    DriveCommands.alignToShoot(
-                        drive,
-                        () -> controller.getLeftY(),
-                        () -> controller.getLeftX(),
-                        () -> -controller.getRightX()),
+                    Commands.defer(() -> alignCommand, Set.of(drive)),
                     Commands.sequence(
                         Commands.runOnce(() -> shooter.shoot(), shooter),
                         Commands.waitSeconds(0.5))),
-                // After the above finishes, schedule the follow-up shooting commands separately,
-                // so this sequence ends and drive subsystem is free.
                 Commands.runOnce(
                     () -> CommandScheduler.getInstance().schedule(shootFeedSequence))));
 
@@ -191,8 +215,8 @@ public class RobotContainer {
         .whileTrue(
             DriveCommands.joystickDriveAtAngle(
                 drive,
-                () -> controller.getLeftY(),
-                () -> controller.getLeftX(),
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
                 () -> new Rotation2d()));
 
     // Switch to X pattern when X button is pressed

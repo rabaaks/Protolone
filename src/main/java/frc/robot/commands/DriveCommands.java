@@ -36,6 +36,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -56,12 +57,12 @@ public class DriveCommands {
   private static final double DRIVE_MAX_VELOCITY = 2.5;
   private static final double DRIVE_MAX_ACCELERATION = 6.5;
 
-  private static final double POSITION_TOLERANCE = 0.1;
+  private static final double POSITION_TOLERANCE = 0.3;
 
   //   private static final Translation2d TARGET_POSITION = new Translation2d(4.5, 4);
   private static final Translation2d TARGET_POSITION =
       new Translation2d(
-          aprilTagLayout.getTagPose(2).get().getX(), aprilTagLayout.getTagPose(2).get().getY());
+          aprilTagLayout.getTagPose(14).get().getX(), aprilTagLayout.getTagPose(2).get().getY());
 
   private static final double TARGET_DISTANCE = Units.inchesToMeters(58);
 
@@ -178,7 +179,8 @@ public class DriveCommands {
       Drive drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
-      DoubleSupplier rotationSupplier) {
+      DoubleSupplier rotationSupplier,
+      BooleanSupplier useTranslation) {
 
     // Create PID controller
     ProfiledPIDController angleController =
@@ -232,15 +234,18 @@ public class DriveCommands {
                       new Rotation2d(angleController.getSetpoint().position)));
               // Get linear velocity
               Translation2d linearVelocity =
-                  new Translation2d(
-                      xController.calculate(
-                          drive.getPose().getX(),
-                          new TrapezoidProfile.State(
-                              target.getX(), xSupplier.getAsDouble() * DRIVE_MAX_VELOCITY)),
-                      yController.calculate(
-                          drive.getPose().getY(),
-                          new TrapezoidProfile.State(
-                              target.getY(), ySupplier.getAsDouble() * DRIVE_MAX_VELOCITY)));
+                  useTranslation.getAsBoolean()
+                      ? new Translation2d(
+                          xController.calculate(
+                              drive.getPose().getX(),
+                              new TrapezoidProfile.State(
+                                  target.getX(), xSupplier.getAsDouble() * DRIVE_MAX_VELOCITY)),
+                          yController.calculate(
+                              drive.getPose().getY(),
+                              new TrapezoidProfile.State(
+                                  target.getY(), ySupplier.getAsDouble() * DRIVE_MAX_VELOCITY)))
+                      : getLinearVelocityFromJoysticks(
+                          xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
               // Calculate angular speed
               double omega =
