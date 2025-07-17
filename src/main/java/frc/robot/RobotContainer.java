@@ -174,21 +174,21 @@ public class RobotContainer {
                     translationAlign,
                     Commands.sequence(
                         Commands.runOnce(() -> shooter.shoot(), shooter),
-                        Commands.waitSeconds(0.5))),
+                        Commands.waitSeconds(0.5))).until(controller.rightBumper()),
                 Commands.runOnce(
                     () -> CommandScheduler.getInstance().schedule(shootFeedSequence))));
 
     controller
         .leftBumper()
-        .onTrue(Commands.runOnce(() -> shooter.feed(), shooter).andThen(Commands.none()));
+        .whileTrue(Commands.runOnce(() -> shooter.feed(), shooter).andThen(Commands.none()));
 
     controller
         .rightBumper()
-        .onTrue(Commands.runOnce(() -> shooter.shoot(), shooter).andThen(Commands.none()));
+        .whileTrue(Commands.runOnce(() -> shooter.shoot(), shooter).andThen(Commands.none()));
 
     controller
         .leftTrigger()
-        .whileTrue(Commands.runOnce(() -> shooter.intake(), shooter).andThen(Commands.none()));
+        .onTrue(Commands.runOnce(() -> shooter.intake(), shooter).until(() -> shooter.getDetected()));
 
     // Lock to 0° when A button is held
     controller
