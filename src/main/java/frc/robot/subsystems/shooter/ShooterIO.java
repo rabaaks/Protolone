@@ -13,6 +13,9 @@ public interface ShooterIO {
     public double shootVelocityRadPerSec = 0.0;
     public double shootAppliedVolts = 0.0;
     public double shootCurrentAmps = 0.0;
+
+    public boolean laserCanConnected;
+    public boolean noteDetected;
   }
 
   public default void updateInputs(ShooterIOInputs inputs) {}

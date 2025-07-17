@@ -62,7 +62,7 @@ public class DriveCommands {
   //   private static final Translation2d TARGET_POSITION = new Translation2d(4.5, 4);
   private static final Translation2d TARGET_POSITION =
       new Translation2d(
-          aprilTagLayout.getTagPose(14).get().getX(), aprilTagLayout.getTagPose(2).get().getY());
+          aprilTagLayout.getTagPose(5).get().getX(), aprilTagLayout.getTagPose(5).get().getY());
 
   private static final double TARGET_DISTANCE = Units.inchesToMeters(58);
 
@@ -233,17 +233,17 @@ public class DriveCommands {
                       yController.getSetpoint().position,
                       new Rotation2d(angleController.getSetpoint().position)));
               // Get linear velocity
+              xController.setGoal(
+                  new TrapezoidProfile.State(
+                      target.getX(), xSupplier.getAsDouble() * DRIVE_MAX_VELOCITY));
+              yController.setGoal(
+                  new TrapezoidProfile.State(
+                      target.getY(), ySupplier.getAsDouble() * DRIVE_MAX_VELOCITY));
               Translation2d linearVelocity =
                   useTranslation.getAsBoolean()
                       ? new Translation2d(
-                          xController.calculate(
-                              drive.getPose().getX(),
-                              new TrapezoidProfile.State(
-                                  target.getX(), xSupplier.getAsDouble() * DRIVE_MAX_VELOCITY)),
-                          yController.calculate(
-                              drive.getPose().getY(),
-                              new TrapezoidProfile.State(
-                                  target.getY(), ySupplier.getAsDouble() * DRIVE_MAX_VELOCITY)))
+                          xController.calculate(drive.getPose().getX()),
+                          yController.calculate(drive.getPose().getY()))
                       : getLinearVelocityFromJoysticks(
                           xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
@@ -258,7 +258,16 @@ public class DriveCommands {
                       linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                       linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                       omega);
-              drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
+              boolean isFlipped =
+                  DriverStation.getAlliance().isPresent()
+                      && DriverStation.getAlliance().get() == Alliance.Red
+                      && !useTranslation.getAsBoolean();
+              drive.runVelocity(
+                  ChassisSpeeds.fromFieldRelativeSpeeds(
+                      speeds,
+                      isFlipped
+                          ? drive.getRotation().plus(new Rotation2d(Math.PI))
+                          : drive.getRotation()));
             },
             drive)
         .until(

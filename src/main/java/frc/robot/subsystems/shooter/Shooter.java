@@ -3,6 +3,7 @@ package frc.robot.subsystems.shooter;
 import static frc.robot.subsystems.shooter.ShooterConstants.maxVelocity;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
   private final ShooterIO io;
@@ -15,6 +16,7 @@ public class Shooter extends SubsystemBase {
   @Override
   public void periodic() {
     io.updateInputs(inputs);
+    Logger.processInputs("Shooter", inputs);
   }
 
   public void shoot(double velocityRadPerSec) {
@@ -22,7 +24,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public void shoot() {
-    shoot(maxVelocity / 5.0);
+    shoot(maxVelocity);
   }
 
   public void feed() {
@@ -37,5 +39,9 @@ public class Shooter extends SubsystemBase {
   public void stop() {
     io.setShootOpenLoop(0.0);
     io.setFeedOpenLoop(0.0);
+  }
+
+  public boolean getDetected() {
+    return inputs.noteDetected;
   }
 }

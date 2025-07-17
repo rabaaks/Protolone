@@ -15,9 +15,14 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import au.grapplerobotics.ConfigurationFailedException;
+import au.grapplerobotics.LaserCan;
+
 public class ShooterIOSpark implements ShooterIO {
   private final SparkBase feedSpark;
   private final SparkBase shootSpark;
+
+  private final LaserCan laserCan;
 
   private final RelativeEncoder shootEncoder;
 
@@ -51,6 +56,15 @@ public class ShooterIOSpark implements ShooterIO {
     feedSpark.configure(feedConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     shootSpark.configure(
         shootConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    laserCan = new LaserCan(laserCanId);
+    try {   
+      laserCan.setRangingMode(LaserCan.RangingMode.SHORT);
+      laserCan.setRegionOfInterest(new LaserCan.RegionOfInterest(8, 8, 16, 16));
+      laserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_33MS);
+    } catch (ConfigurationFailedException e) {
+      System.out.println("Configuration Failed! " + e);
+    }
   }
 
   @Override
@@ -65,6 +79,8 @@ public class ShooterIOSpark implements ShooterIO {
 
     inputs.feedCurrentAmps = feedSpark.getOutputCurrent();
     inputs.shootCurrentAmps = shootSpark.getOutputCurrent();
+
+    inputs.noteDetected = laserCan.getMeasurement().distance_mm < detectedTheshold;
   }
 
   public void setFeedOpenLoop(double output) {

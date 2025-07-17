@@ -39,7 +39,6 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
-import java.util.Set;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -54,7 +53,7 @@ public class RobotContainer {
   private final Vision vision;
   private final Shooter shooter;
 
-  private Command alignCommand;
+  private boolean doTranslate;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -155,7 +154,7 @@ public class RobotContainer {
         Commands.runOnce(() -> shooter.stop(), shooter).andThen(Commands.none()));
 
     Command shootFeedSequence =
-        Commands.sequence(Commands.runOnce(() -> shooter.feed(), shooter), Commands.waitSeconds(2));
+        Commands.sequence(Commands.runOnce(() -> shooter.feed(), shooter), Commands.waitUntil(() -> !shooter.getDetected()));
 
     Command translationAlign =
         DriveCommands.alignToShoot(
@@ -163,34 +162,16 @@ public class RobotContainer {
             () -> -controller.getLeftY(),
             () -> -controller.getLeftX(),
             () -> -controller.getRightX(),
-            true);
+            () -> doTranslate);
 
-    Command noTranslationAlign =
-        DriveCommands.alignToShoot(
-            drive,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightX(),
-            false);
-
-    alignCommand = translationAlign;
-
-    controller
-        .y()
-        .onTrue(
-            Commands.runOnce(
-                () ->
-                    alignCommand =
-                        (alignCommand == translationAlign
-                            ? noTranslationAlign
-                            : translationAlign)));
+    controller.y().onTrue(Commands.runOnce(() -> doTranslate = !doTranslate));
 
     controller
         .rightTrigger()
         .onTrue(
             Commands.sequence(
                 Commands.parallel(
-                    Commands.defer(() -> alignCommand, Set.of(drive)),
+                    translationAlign,
                     Commands.sequence(
                         Commands.runOnce(() -> shooter.shoot(), shooter),
                         Commands.waitSeconds(0.5))),
